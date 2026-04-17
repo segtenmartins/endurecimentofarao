@@ -64,13 +64,14 @@
     font-size: clamp(4rem, 12vw, 9rem);
     margin-bottom: 1rem;
     animation: floatGlow 4s ease-in-out infinite;
-    filter: drop-shadow(0 0 30px rgba(255,255,255,0.4));
+    filter: drop-shadow(0 0 30px rgba(255,255,255,0.45));
     line-height: 1;
+    will-change: transform;
   }
 
   @keyframes floatGlow {
-    0%, 100% { transform: translateY(0); filter: drop-shadow(0 0 20px rgba(255,255,255,0.3)); }
-    50% { transform: translateY(-12px); filter: drop-shadow(0 0 45px rgba(255,255,255,0.7)); }
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-14px); }
   }
 
   .hero-eyeline {
@@ -136,13 +137,14 @@
   .scroll-cta:hover { color: var(--gold-light); }
   .scroll-arrow {
     width: 1px;
-    height: 40px;
+    height: 44px;
     background: linear-gradient(to bottom, #ffffff, transparent);
     animation: arrowPulse 1.8s ease-in-out infinite;
+    will-change: opacity, transform;
   }
   @keyframes arrowPulse {
-    0%, 100% { opacity: 0.4; height: 30px; }
-    50% { opacity: 1; height: 50px; }
+    0%, 100% { opacity: 0.35; transform: scaleY(0.7); }
+    50% { opacity: 1; transform: scaleY(1); }
   }
 
   @keyframes fadeUp {
@@ -586,14 +588,14 @@
 
 <!-- NAV -->
 <nav id="mainNav">
-  <button class="nav-btn active" onclick="scrollTo('ponto-partida')">Problema</button>
-  <button class="nav-btn" onclick="scrollTo('resistencia')">Resistência</button>
-  <button class="nav-btn" onclick="scrollTo('linguagem')">Linguagem Bíblica</button>
-  <button class="nav-btn" onclick="scrollTo('tese')">A Tese</button>
-  <button class="nav-btn" onclick="scrollTo('suporte')">Suporte</button>
-  <button class="nav-btn" onclick="scrollTo('implicacoes')">Implicações</button>
-  <button class="nav-btn" onclick="scrollTo('conclusao')">Conclusão</button>
-  <button class="nav-btn" onclick="scrollTo('referencias')">Referências</button>
+  <button class="nav-btn active" onclick="irPara('ponto-partida')">Problema</button>
+  <button class="nav-btn" onclick="irPara('resistencia')">Resistência</button>
+  <button class="nav-btn" onclick="irPara('linguagem')">Linguagem Bíblica</button>
+  <button class="nav-btn" onclick="irPara('tese')">A Tese</button>
+  <button class="nav-btn" onclick="irPara('suporte')">Suporte</button>
+  <button class="nav-btn" onclick="irPara('implicacoes')">Implicações</button>
+  <button class="nav-btn" onclick="irPara('conclusao')">Conclusão</button>
+  <button class="nav-btn" onclick="irPara('referencias')">Referências</button>
 </nav>
 
 <main>
@@ -921,9 +923,13 @@
     });
   });
 
-  // SCROLL TO
-  function scrollTo(id) {
-    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  // SCROLL TO — nome próprio para não conflitar com window.scrollTo nativo
+  function irPara(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const navH = document.getElementById('mainNav').offsetHeight;
+    const top = el.getBoundingClientRect().top + window.scrollY - navH - 16;
+    window.scrollTo({ top, behavior: 'smooth' });
   }
 
   // INTERSECTION OBSERVER
@@ -931,7 +937,6 @@
     entries.forEach(e => {
       if (e.isIntersecting) {
         e.target.classList.add('visible');
-        // Animate movements inside this section
         const mvs = e.target.querySelectorAll('.movement');
         mvs.forEach((m, i) => {
           setTimeout(() => m.classList.add('visible'), i * 180);
@@ -948,7 +953,6 @@
     const body = item.querySelector('.acc-body');
     const isOpen = item.classList.contains('open');
 
-    // close all in same accordion
     btn.closest('.accordion').querySelectorAll('.acc-item').forEach(i => {
       i.classList.remove('open');
       i.querySelector('.acc-body').style.maxHeight = '0';
@@ -963,7 +967,7 @@
   // REF TOOLTIPS
   const tooltip = document.getElementById('refTooltip');
   document.querySelectorAll('.ref-tag').forEach(tag => {
-    tag.addEventListener('mouseenter', (e) => {
+    tag.addEventListener('mouseenter', () => {
       tooltip.textContent = tag.dataset.tip;
       tooltip.style.opacity = '1';
     });
